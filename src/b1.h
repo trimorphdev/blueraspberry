@@ -32,6 +32,8 @@ namespace B1 {
     typedef BR::Int Int;
     typedef BR::Float Float;
     typedef BR::VariableReference VariableReference;
+    typedef BR::Array Array;
+    typedef BR::Function Function;
     typedef BR::Context Context;
 
     void Error(std::string msg) {
