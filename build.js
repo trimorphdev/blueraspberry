@@ -38,7 +38,7 @@ if (error)
     process.exit(1);
 
 console.log("Building executable...");
-let child = childProcess.spawnSync('g++', ['-o', 'bin/blueraspberry.exe'].concat(compiled));
+let child = childProcess.spawnSync('g++', ['-o', 'bin/blueraspberry'].concat(compiled));
 if (child.output.join('').trim() !== '')
     console.log(child.output.toString())
 
