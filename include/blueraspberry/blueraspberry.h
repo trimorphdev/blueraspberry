@@ -4,8 +4,7 @@
 #include <string>
 #include <unordered_map>
 #include <iostream>
-
-#include "error.h"
+#include <functional>
 
 namespace BR {
     class Object {
@@ -18,6 +17,48 @@ namespace BR {
     class Null : public Object {};
 
     class Undefined : public Object {};
+
+    class Context {
+    public:
+        std::unordered_map<std::string, Object*> data;
+
+        Context() {}
+        Context(std::unordered_map<std::string, Object*> data) {
+            this->data.insert(data.begin(), data.end());
+        }
+
+        Context Clone() {
+            return Context(this->data);
+        }
+
+        Object* get(std::string key) {
+            auto iter = this->data.find(key);
+            
+            if (iter == this->data.end())
+                return new Undefined();
+            else
+                return iter->second;
+        }
+
+        void set(std::string key, Object *value) {
+             auto iter = this->data.find(key);
+
+            if (iter == this->data.end())
+                this->data.insert({key, value});
+            else
+                iter->second = value;
+        }
+
+        void merge(Context context) {
+           this->data.insert(context.data.begin(), context.data.end());
+        }
+
+        void log() {
+            for (auto iter : this->data)
+                std::cout << iter.first << " ";
+            std::cout << std::endl;
+        }
+    };
 
     class Bool : public Object {
     public:
@@ -64,6 +105,24 @@ namespace BR {
         }
     };
 
+    class Array : public Object {
+    public:
+        std::vector<Object*> data;
+
+        Array(std::vector<Object*> data) {
+            this->data = data;
+        }
+    };
+
+    class Function : public Object {
+    public:
+        std::function<void(Context, Array)> callback;
+
+        Function(std::function<Object*(Context, Array)> callback) {
+            this->callback = callback;
+        }
+    };
+
     namespace Statements {
         class Import : public Object {
         public:
@@ -95,49 +154,18 @@ namespace BR {
                 this->value = value;
             }
         };
+
+        class FunctionCall : public Object {
+        public:
+            std::string funcname;
+            Array arglist = std::vector<Object*>();
+
+            FunctionCall(std::string name, Array args) {
+                this->funcname = name;
+                this->arglist = args;
+            }
+        };
     }
-
-    class Context {
-    public:
-        std::unordered_map<std::string, Object*> data;
-
-        Context() {}
-        Context(std::unordered_map<std::string, Object*> data) {
-            this->data.insert(data.begin(), data.end());
-        }
-
-        Context Clone() {
-            return Context(this->data);
-        }
-
-        Object* get(std::string key) {
-            auto iter = this->data.find(key);
-            
-            if (iter == this->data.end())
-                return new Undefined();
-            else
-                return iter->second;
-        }
-
-        void set(std::string key, Object *value) {
-             auto iter = this->data.find(key);
-
-            if (iter == this->data.end())
-                this->data.insert({key, value});
-            else
-                iter->second = value;
-        }
-
-        void merge(Context context) {
-           this->data.insert(context.data.begin(), context.data.end());
-        }
-
-        void log() {
-            for (auto iter : this->data)
-                std::cout << iter.first << " ";
-            std::cout << std::endl;
-        }
-    };
 }
 
 #endif

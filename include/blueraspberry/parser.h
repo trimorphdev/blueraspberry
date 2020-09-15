@@ -16,6 +16,7 @@
 #include "load_module.h"
 #include "module_path.h"
 #include "lex.h"
+#include "parse_list.h"
 
 std::vector<BR::Object*> parse(std::vector<Token> toks, std::string str, std::vector<std::string> stack, std::string filename) {
     std::vector<BR::Object*> ast;
@@ -37,13 +38,16 @@ std::vector<BR::Object*> parse(std::vector<Token> toks, std::string str, std::ve
                     error("Expected module name, got unexpected token '" + toks[i + 1].value + "'", stack, str, toks[i + 1]);
             } else
                 error("Expected a module name, got '<EOF>'", stack, str, toks[i]);
-        } else if (tok.value == "var") {
+        } else if (tok.value == "var" || tok.value == "const") {
             if (has<Token>(toks, i + 1)) {
                 if (toks[i + 1].name == "iden") {
                     if (has<Token>(toks, i + 2)) {
                         if (toks[i + 2].value == "=") {
                             if (has<Token>(toks, i + 3)) {
                                 br_value res = get_value(toks, i + 3, str, stack);
+
+                                if (tok.value == "const")
+                                    res.value->constant = true;
 
                                 ast.push_back(new BR::Statements::VariableDefinition(toks[i + 1].value, res.value));
 
@@ -81,6 +85,18 @@ std::vector<BR::Object*> parse(std::vector<Token> toks, std::string str, std::ve
                             i++;
                     } else
                         error("Expected value for '" + toks[i + 1].value + "', got '<EOF>'", stack, str, toks[i + 1]);
+                } else if (toks[i + 1].value == "(") {
+                    if (has<Token>(toks, i + 2)) {
+                        pl_result res = parse_list(toks, i + 2, str, ")", stack);
+
+                        ast.push_back(new BR::Statements::FunctionCall(toks[i].value, BR::Array(res.value)));
+
+                        i = res.endindex + 1;
+
+                        if (has<Token>(toks, i) && toks[i].value == ";")
+                            i++;
+                    } else  
+                        error("Expected ')', not '<EOF>'.", stack, str, toks[i]);
                 } else
                     error("Unexpected token '" + tok.value + "'", stack, str, toks[i]);
             } else
@@ -123,28 +139,26 @@ BR::Context parseAST(std::vector<BR::Object*> ast, std::vector<std::string> stac
             if (BR::Undefined *contextItem = dynamic_cast<BR::Undefined*>(context.get(item->varname)))
                 error("Tried to set uninitialized variable '" + item->varname + "'", stack);
             else if (context.get(item->varname)->constant)
-                error("Attempted to set constant variable '" + item->varname + "'", stack);
+                error("Attempted to change the value of constant variable '" + item->varname + "'", stack);
             else {
                 context.set(item->varname, item->value);
                 std::cout << ansi::green("DEF ") << padEnd(item->varname, 25) + " -> @VAL" << std::endl;
             }
         } else if (BR::Statements::Import *item = dynamic_cast<BR::Statements::Import*>(curr)) {
             BR::Context modcontext = source_context.Clone();
-
-            /*
-            std::string path = modulePath(item->module, dirname(filename));
-            std::string source = loadModule(path);
-
-            stack.push_back(path);
-            std::vector<Token> toks = lexer(source);
-            std::vector<BR::Object*> astitems = parse(toks, source, stack, path);
-            modcontext = parseAST(astitems, stack, source, path, modcontext);
-            stack.pop_back();
-            */
-
             modcontext = import(modcontext, item->module);
-            
             context.merge(modcontext);
+        } else if (BR::Statements::FunctionCall *item = dynamic_cast<BR::Statements::FunctionCall*>(curr)) {
+            if (BR::Undefined *contextItem = dynamic_cast<BR::Undefined*>(context.get(item->funcname))) {
+                error("(Failed) attempt to call 'undefined'.", stack);
+            } else {
+                if (BR::Function *func = dynamic_cast<BR::Function*>(context.get(item->funcname))) {
+                    std::cout << ansi::green("CAL ") << item->funcname << std::endl;
+
+                    func->callback(context, item->arglist);
+                } else
+                    error("(Failed) attempt to call a value that isn't a function.", stack);
+            }
         }
     }
 

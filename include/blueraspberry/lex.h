@@ -15,7 +15,7 @@ std::vector<Token> lexer(std::string str) {
     regexps.push_back(RegExp("string", "^(\".*?\"|'.*?')"));
     regexps.push_back(RegExp("bool", "^(true|false)"));
     regexps.push_back(RegExp("null", "^(null)"));
-    regexps.push_back(RegExp("keyword", "^(import|var)"));
+    regexps.push_back(RegExp("keyword", "^(import|var|const)"));
     regexps.push_back(RegExp("iden", "^([a-zA-Z_][_\\w]*)\\b"));
     regexps.push_back(RegExp("float", "^(\\.\\d+|\\d+\\.\\d+)"));
     regexps.push_back(RegExp("int", "^\\d+"));
