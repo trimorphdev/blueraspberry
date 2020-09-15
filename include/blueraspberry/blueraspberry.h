@@ -5,6 +5,8 @@
 #include <unordered_map>
 #include <iostream>
 
+#include "error.h"
+
 namespace BR {
     class Object {
     public:

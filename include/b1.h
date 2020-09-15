@@ -10,10 +10,18 @@ thanks for using blueraspberry :)
 
 #include <string>
 #include <vector>
+#include <functional>
 
 #include "blueraspberry/blueraspberry.h"
 #include "blueraspberry/parser.h"
 #include "blueraspberry/lex.h"
+#include "blueraspberry/error.h"
+
+BR::Context _IMPORT_DEFAULT(BR::Context cont, std::string str) {
+    error("Imports are disabled in this context.");
+
+    return cont;
+}
 
 namespace B1 {
     typedef BR::Object Object;
@@ -26,6 +34,13 @@ namespace B1 {
     typedef BR::VariableReference VariableReference;
     typedef BR::Context Context;
 
+    void Error(std::string msg) {
+        error(msg);
+    }
+
+    void Error(std::string msg, std::vector<std::string> stack) {
+        error(msg, stack);
+    }
 
     class Script {
     private:
@@ -34,6 +49,8 @@ namespace B1 {
         std::vector<BR::Object*> ast;
         std::vector<std::string> stack;
         BR::Context context;
+
+        std::function<BR::Context(BR::Context, std::string)> _import = _IMPORT_DEFAULT;
     public:
         Script(std::string code, BR::Context context, std::string path = "@anonymous") {
             this->code = code;
@@ -49,8 +66,12 @@ namespace B1 {
             this->ast = parse(toks, code, stack, path);
         }
 
+        BindImport(std::function<BR::Context(BR::Context, std::string)> f) {
+            this->_import = f;
+        }
+
         Run() {
-            parseAST(this->ast, this->stack, this->code, this->path, this->context);
+            parseAST(this->ast, this->stack, this->code, this->path, this->context, this->_import);
         }
     };
 }
