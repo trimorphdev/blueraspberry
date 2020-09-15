@@ -6,10 +6,10 @@
   "directories": {
     "test": "tests"
   },
-  "dependencies": {
+  "dependencies": {},
+  "devDependencies": {
     "glob": "^7.1.6"
   },
-  "devDependencies": {},
   "scripts": {
     "test": "test.bat"
   },
