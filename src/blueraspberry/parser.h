@@ -3,6 +3,7 @@
 #define quote(x) #x
 
 #include <vector>
+#include <functional>
 
 #include "lexer_utils/Token.h"
 #include "blueraspberry.h"
@@ -96,7 +97,7 @@ inline bool instanceof(const T) {
    return std::is_base_of<Base, T>::value;
 }
 
-BR::Context parseAST(std::vector<BR::Object*> ast, std::vector<std::string> stack, std::string str, std::string filename, BR::Context context) {
+BR::Context parseAST(std::vector<BR::Object*> ast, std::vector<std::string> stack, std::string str, std::string filename, BR::Context context, std::function<BR::Context(BR::Context, std::string)> import) {
     BR::Context source_context = context.Clone();
     
     for (int i = 0; i < ast.size(); i++) {
@@ -130,6 +131,7 @@ BR::Context parseAST(std::vector<BR::Object*> ast, std::vector<std::string> stac
         } else if (BR::Statements::Import *item = dynamic_cast<BR::Statements::Import*>(curr)) {
             BR::Context modcontext = source_context.Clone();
 
+            /*
             std::string path = modulePath(item->module, dirname(filename));
             std::string source = loadModule(path);
 
@@ -138,6 +140,9 @@ BR::Context parseAST(std::vector<BR::Object*> ast, std::vector<std::string> stac
             std::vector<BR::Object*> astitems = parse(toks, source, stack, path);
             modcontext = parseAST(astitems, stack, source, path, modcontext);
             stack.pop_back();
+            */
+
+            modcontext = import(modcontext, item->module);
             
             context.merge(modcontext);
         }
