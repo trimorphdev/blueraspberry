@@ -1,0 +1,37 @@
+{
+  "name": "brbuild",
+  "version": "1.0.0",
+  "description": "Build tools for the BlueRaspberry programming language.",
+  "main": "build.js",
+  "directories": {
+    "test": "tests"
+  },
+  "dependencies": {
+    "glob": "^7.1.6"
+  },
+  "devDependencies": {},
+  "scripts": {
+    "test": "test.bat"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/zackenstien/blueraspberry.git"
+  },
+  "keywords": [
+    "programming",
+    "language",
+    "blue",
+    "raspberry",
+    "node",
+    "js",
+    "java",
+    "script",
+    "javascript"
+  ],
+  "author": "Zack Pace",
+  "license": "MIT",
+  "bugs": {
+    "url": "https://github.com/zackenstien/blueraspberry/issues"
+  },
+  "homepage": "https://github.com/zackenstien/blueraspberry#readme"
+}

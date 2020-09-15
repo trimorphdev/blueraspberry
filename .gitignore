@@ -1,0 +1,11 @@
+# Don't include prebuilt binaries
+bin/
+
+# Don't include build script node modules.
+node_modules/
+
+# Don't include .vscode folder
+.vscode/
+
+# Don't include test bat file (it's poorly written)
+test.bat
