@@ -1,2 +1,3 @@
-print("hello, world!", 123, true);
-print("hello, world!", 123, null);
+var x = print();
+
+print(['test', 2], x);

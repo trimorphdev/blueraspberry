@@ -3,6 +3,8 @@ const childProcess = require('child_process'),
       fs = require('fs'),
       path = require('path');
 
+console.time('Compiled');
+
 let files = glob.sync('src/**/*.cpp' , {
     cwd: process.cwd()
 });
@@ -17,10 +19,12 @@ process.on('exit', () => {
     })
 }); 
 
+console.log('Compiling Blue Raspberry');
+
 let error;
 files.forEach(function(file, i) {
     if (!error) {
-        console.log(`(${i + 1}/${files.length}): ${file}`);
+        console.log(`Compiling (${i + 1}/${files.length}): ${file}`);
         let child = childProcess.spawnSync('g++', ['--std=c++17', '-pthread', '-c', path.join(process.cwd(), file), '-o', path.join(process.cwd(), path.basename(file, '.cpp') + '.o')])
         let output = child.output.join('');
         if (output.trim() !== '')
@@ -44,3 +48,5 @@ if (child.output.join('').trim() !== '')
 
 if (child.status !== 0)
     process.exit(1);
+
+console.timeEnd('Compiled');

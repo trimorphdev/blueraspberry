@@ -18,6 +18,8 @@ int main(int argc, char** argv) {
 
         B1::Script scr = B1::Script(module, context, module_path);
         scr.Run();
-    }
+    } else
+        std::cout << "Usage: blueraspberry <string>" << std::endl;
+
     return 0;
 }
