@@ -41,7 +41,7 @@ namespace _PRINT_BACKEND {
         std::string res = "";
 
         for (int i = 0; i < data.size(); i++) {
-            std::string ires = getansi(data[i], true);
+            std::string ires = getansi(data[i], isarr);
 
             if (res == "") res += ires;
             else res += (isarr ? ", " : " ") + ires;
