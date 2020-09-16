@@ -30,7 +30,7 @@ namespace _TOSTRING_BACKEND {
         } else if (BR::Float *item = dynamic_cast<BR::Float*>(obj)) {
             return std::to_string(item->value);
         } else if (BR::Array *item = dynamic_cast<BR::Array*>(obj)) {
-            return "[ " + arrayToString(item) + " ]";
+            return arrayToString(item);
         } else
             return "[Object object]";
     }
