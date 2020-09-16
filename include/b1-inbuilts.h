@@ -3,6 +3,7 @@
 
 #include "b1.h"
 #include "inbuilts/print.h"
+#include "inbuilts/toString.h"
 #include "blueraspberry/fs_utils/path.h"
 
 #if defined(_WIN32)
@@ -35,6 +36,7 @@ B1::Context add_inbuilts(B1::Context pre, std::string module_path) {
 
     /* Methods */
     pre.set("print", new B1::Function(print));
+    pre.set("toString", new B1::Function(toString));
 
     /* System Specific Variables */
     #ifdef os
