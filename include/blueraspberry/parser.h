@@ -16,7 +16,7 @@
 #include "load_module.h"
 #include "module_path.h"
 #include "lex.h"
-#include "parse_list.h"
+#include "handlevalue.h"
 
 std::vector<BR::Object*> parse(std::vector<Token> toks, std::string str, std::vector<std::string> stack, std::string filename) {
     std::vector<BR::Object*> ast;
@@ -96,7 +96,7 @@ std::vector<BR::Object*> parse(std::vector<Token> toks, std::string str, std::ve
                         if (has<Token>(toks, i) && toks[i].value == ";")
                             i++;
                     } else  
-                        error("Expected ')', not '<EOF>'.", stack, str, toks[i]);
+                        error("Expected ')' or argument, got '<EOF>'.", stack, str, toks[i]);
                 } else
                     error("Unexpected token '" + tok.value + "'", stack, str, toks[i]);
             } else
@@ -121,18 +121,8 @@ BR::Context parseAST(std::vector<BR::Object*> ast, std::vector<std::string> stac
 
         if (BR::Statements::VariableDefinition *item = dynamic_cast<BR::Statements::VariableDefinition*>(curr)) {
             if (BR::Undefined *contextItem = dynamic_cast<BR::Undefined*>(context.get(item->varname))) {
-                if (BR::VariableReference *value = dynamic_cast<BR::VariableReference*>(item->value)) {
-                    context.set(item->varname, context.get(value->value));
-                    
-                    if (BR::Undefined *var = dynamic_cast<BR::Undefined*>(context.get(value->value)))
-                        error("Variable '" + value->value + "' is undefined.", stack);
-
-                    std::cout << ansi::green("DEF ") << padEnd(item->varname, 25) + " -> " + value->value + " (@VAL)" << std::endl;
-                } else {
-                    context.set(item->varname, item->value);
-
-                    std::cout << ansi::green("DEF ") << padEnd(item->varname, 25) + " -> @VAL" << std::endl;
-                }
+                context.set(item->varname, handlevalue(item->value, context, stack));
+                std::cout << ansi::green("DEF ") << padEnd(item->varname, 25) + " -> @VAL" << std::endl;
             } else
                 error("Variable '" + item->varname + "' is already defined.", stack);
         } else if (BR::Statements::VariableSet *item = dynamic_cast<BR::Statements::VariableSet*>(curr)) {
@@ -141,7 +131,7 @@ BR::Context parseAST(std::vector<BR::Object*> ast, std::vector<std::string> stac
             else if (context.get(item->varname)->constant)
                 error("Attempted to change the value of constant variable '" + item->varname + "'", stack);
             else {
-                context.set(item->varname, item->value);
+                context.set(item->varname, handlevalue(item->value, context, stack));
                 std::cout << ansi::green("DEF ") << padEnd(item->varname, 25) + " -> @VAL" << std::endl;
             }
         } else if (BR::Statements::Import *item = dynamic_cast<BR::Statements::Import*>(curr)) {
@@ -149,16 +139,7 @@ BR::Context parseAST(std::vector<BR::Object*> ast, std::vector<std::string> stac
             modcontext = import(modcontext, item->module);
             context.merge(modcontext);
         } else if (BR::Statements::FunctionCall *item = dynamic_cast<BR::Statements::FunctionCall*>(curr)) {
-            if (BR::Undefined *contextItem = dynamic_cast<BR::Undefined*>(context.get(item->funcname))) {
-                error("(Failed) attempt to call 'undefined'.", stack);
-            } else {
-                if (BR::Function *func = dynamic_cast<BR::Function*>(context.get(item->funcname))) {
-                    std::cout << ansi::green("CAL ") << item->funcname << std::endl;
-
-                    func->callback(context, item->arglist);
-                } else
-                    error("(Failed) attempt to call a value that isn't a function.", stack);
-            }
+            handlefcall(item, context, stack);
         }
     }
 

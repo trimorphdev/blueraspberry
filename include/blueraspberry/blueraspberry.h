@@ -116,7 +116,7 @@ namespace BR {
 
     class Function : public Object {
     public:
-        std::function<void(Context, Array)> callback;
+        std::function<Object*(Context, Array)> callback;
 
         Function(std::function<Object*(Context, Array)> callback) {
             this->callback = callback;

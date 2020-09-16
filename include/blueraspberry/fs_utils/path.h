@@ -7,7 +7,7 @@
 #include "../str_utils/split.h"
 
 #ifdef WINDOWS
-#define DELIMIER '\\'
+#define DELIMITER '\\'
 #else
 #define DELIMITER '/'
 #endif
